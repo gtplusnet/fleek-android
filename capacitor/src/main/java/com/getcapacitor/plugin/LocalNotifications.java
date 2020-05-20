@@ -12,7 +12,6 @@ import com.getcapacitor.PluginRequestCodes;
 import com.getcapacitor.plugin.notification.LocalNotification;
 import com.getcapacitor.plugin.notification.LocalNotificationManager;
 import com.getcapacitor.plugin.notification.NotificationAction;
-import com.getcapacitor.plugin.notification.NotificationChannelManager;
 import com.getcapacitor.plugin.notification.NotificationStorage;
 
 import org.json.JSONArray;
@@ -30,7 +29,6 @@ import java.util.Map;
 public class LocalNotifications extends Plugin {
   private LocalNotificationManager manager;
   private NotificationStorage notificationStorage;
-  private NotificationChannelManager notificationChannelManager;
 
   public LocalNotifications() {
   }
@@ -39,9 +37,8 @@ public class LocalNotifications extends Plugin {
   public void load() {
     super.load();
     notificationStorage = new NotificationStorage(getContext());
-    manager = new LocalNotificationManager(notificationStorage, getActivity(), getContext());
+    manager = new LocalNotificationManager(notificationStorage, getActivity());
     manager.createNotificationChannel();
-    notificationChannelManager = new NotificationChannelManager(getActivity());
   }
 
   @Override
@@ -73,27 +70,8 @@ public class LocalNotifications extends Plugin {
       return;
     }
     JSONArray ids = manager.schedule(call, localNotifications);
-    if (ids != null) {
-      notificationStorage.appendNotificationIds(localNotifications);
-      JSObject result = new JSObject();
-      JSArray jsArray = new JSArray();
-      for (int i=0; i < ids.length(); i++) {
-        try {
-          JSObject notification = new JSObject().put("id", ids.getString(i));
-          jsArray.put(notification);
-        } catch (Exception ex) {
-        }
-      }
-      result.put("notifications", jsArray);
-      call.success(result);
-    }
-  }
-
-  @PluginMethod()
-  public void requestPermission(PluginCall call) {
-    JSObject result = new JSObject();
-    result.put("granted", true);
-    call.success(result);
+    notificationStorage.appendNotificationIds(localNotifications);
+    call.success(new JSObject().put("ids", ids));
   }
 
   @PluginMethod()
@@ -121,21 +99,6 @@ public class LocalNotifications extends Plugin {
     JSObject data = new JSObject();
     data.put("value", manager.areNotificationsEnabled());
     call.success(data);
-  }
-
-  @PluginMethod()
-  public void createChannel(PluginCall call) {
-    notificationChannelManager.createChannel(call);
-  }
-
-  @PluginMethod()
-  public void deleteChannel(PluginCall call) {
-    notificationChannelManager.deleteChannel(call);
-  }
-
-  @PluginMethod()
-  public void listChannels(PluginCall call) {
-    notificationChannelManager.listChannels(call);
   }
 
 }

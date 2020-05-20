@@ -1,6 +1,7 @@
 package com.getcapacitor;
 
 import android.app.Activity;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,9 +48,9 @@ public class Config {
       String jsonString = b.toString();
       this.config = new JSONObject(jsonString);
     } catch (IOException ex) {
-      Logger.error("Unable to load capacitor.config.json. Run npx cap copy first", ex);
+      Log.e(LogUtils.getCoreTag(), "Unable to load capacitor.config.json. Run npx cap copy first", ex);
     } catch (JSONException ex) {
-      Logger.error("Unable to parse capacitor.config.json. Make sure it's valid json", ex);
+      Log.e(LogUtils.getCoreTag(), "Unable to parse capacitor.config.json. Make sure it's valid json", ex);
     } finally {
       if (reader != null) {
         try {

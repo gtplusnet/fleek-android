@@ -1,5 +1,7 @@
 package com.getcapacitor;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,28 +77,23 @@ public class PluginCall {
     try {
       errorResult.put("message", msg);
     } catch (Exception jsonEx) {
-      Logger.error(Logger.tags("Plugin"), jsonEx.toString(), null);
+      Log.e(LogUtils.getPluginTag(), jsonEx.toString());
     }
 
     this.msgHandler.sendResponseMessage(this, null, errorResult);
   }
 
   public void error(String msg, Exception ex) {
-    error(msg, null, ex);
-  }
-
-  public void error(String msg, String code, Exception ex) {
     PluginResult errorResult = new PluginResult();
 
     if(ex != null) {
-      Logger.error(Logger.tags("Plugin"), msg, ex);
+      Log.e(LogUtils.getPluginTag(), msg, ex);
     }
 
     try {
       errorResult.put("message", msg);
-      errorResult.put("code", code);
     } catch (Exception jsonEx) {
-      Logger.error(Logger.tags("Plugin"), jsonEx.getMessage(), null);
+      Log.e(LogUtils.getPluginTag(), jsonEx.getMessage());
     }
 
     this.msgHandler.sendResponseMessage(this, null, errorResult);
@@ -108,10 +105,6 @@ public class PluginCall {
 
   public void reject(String msg, Exception ex) {
     error(msg, ex);
-  }
-
-  public void reject(String msg, String code) {
-    error(msg, code, null);
   }
 
   public void reject(String msg) {

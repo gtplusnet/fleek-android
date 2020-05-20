@@ -2,10 +2,9 @@ package com.getcapacitor.plugin.background;
 
 import android.app.IntentService;
 import android.content.Intent;
-
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import com.getcapacitor.Logger;
+import android.util.Log;
+import com.getcapacitor.LogUtils;
 
 public class BackgroundTaskService extends IntentService {
   public BackgroundTaskService() {
@@ -16,7 +15,7 @@ public class BackgroundTaskService extends IntentService {
   protected void onHandleIntent(Intent intent) {
     // Gets data from the incoming Intent
     String taskId = intent.getStringExtra("taskId");
-    Logger.debug("Doing background task: " + taskId);
+    Log.d(LogUtils.getCoreTag(), "Doing background task: " + taskId);
 
     Intent localIntent = new Intent(BackgroundTask.TASK_BROADCAST_ACTION)
         .putExtra("taskId", taskId);

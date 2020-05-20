@@ -2,6 +2,8 @@ package com.getcapacitor.plugin;
 
 import android.app.Activity;
 
+import androidx.annotation.NonNull;
+
 import com.getcapacitor.Dialogs;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -78,7 +80,6 @@ public class Modals extends Plugin {
     final String okButtonTitle = call.getString("okButtonTitle", "OK");
     final String cancelButtonTitle = call.getString("cancelButtonTitle", "Cancel");
     final String inputPlaceholder = call.getString("inputPlaceholder", "");
-    final String inputText = call.getString("inputText", "");
 
     if(title == null || message == null) {
       call.error("Please provide a title or message for the alert");
@@ -90,7 +91,7 @@ public class Modals extends Plugin {
       return;
     }
 
-    Dialogs.prompt(c, message, title, okButtonTitle, cancelButtonTitle, inputPlaceholder, inputText, new Dialogs.OnResultListener() {
+    Dialogs.prompt(c, message, title, okButtonTitle, cancelButtonTitle, inputPlaceholder, new Dialogs.OnResultListener() {
       @Override
       public void onResult(boolean value, boolean didCancel, String inputValue) {
         JSObject ret = new JSObject();
@@ -124,9 +125,7 @@ public class Modals extends Plugin {
     }
 
     final ModalsBottomSheetDialogFragment fragment = new ModalsBottomSheetDialogFragment();
-    fragment.setTitle(title);
     fragment.setOptions(options);
-    fragment.setCancelable(false);
     fragment.setOnSelectedListener(new ModalsBottomSheetDialogFragment.OnSelectedListener() {
       @Override
       public void onSelected(int index) {

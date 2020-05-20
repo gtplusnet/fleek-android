@@ -1,7 +1,6 @@
 package com.getcapacitor.android;
 
 import android.content.Context;
-
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -20,8 +19,8 @@ public class ExampleInstrumentedTest {
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.getcapacitor.android.test", appContext.getPackageName());
+        assertEquals("com.getcapacitor.android", appContext.getPackageName());
     }
 }

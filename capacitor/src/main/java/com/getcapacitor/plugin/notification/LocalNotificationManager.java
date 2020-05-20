@@ -7,20 +7,17 @@ import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
-
+import android.util.Log;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.Logger;
+import com.getcapacitor.LogUtils;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.android.R;
 import org.json.JSONArray;
@@ -29,7 +26,6 @@ import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.List;
-
 
 /**
  * Contains implementations for all notification actions
@@ -50,20 +46,20 @@ public class LocalNotificationManager {
   private Activity activity;
   private NotificationStorage storage;
 
-  public LocalNotificationManager(NotificationStorage notificationStorage, Activity activity, Context context ) {
+  public LocalNotificationManager(NotificationStorage notificationStorage, Activity activity) {
     storage = notificationStorage;
     this.activity = activity;
-    this.context = context;
+    this.context = activity;
   }
 
   /**
    * Method extecuted when notification is launched by user from the notification bar.
    */
   public JSObject handleNotificationActionPerformed(Intent data, NotificationStorage notificationStorage) {
-    Logger.debug(Logger.tags("LN"), "LocalNotification received: " + data.getDataString());
+    Log.d(LogUtils.getPluginTag("LN"), "LocalNotification received: " + data.getDataString());
     int notificationId = data.getIntExtra(LocalNotificationManager.NOTIFICATION_INTENT_KEY, Integer.MIN_VALUE);
     if (notificationId == Integer.MIN_VALUE) {
-      Logger.debug(Logger.tags("LN"), "Activity started without notification attached");
+      Log.d(LogUtils.getPluginTag("LN"), "Activity started without notification attached");
       return null;
     }
     boolean isRemovable = data.getBooleanExtra(LocalNotificationManager.NOTIFICATION_IS_REMOVABLE_KEY, true);
@@ -98,6 +94,7 @@ public class LocalNotificationManager {
    * Create notification channel
    */
   public void createNotificationChannel() {
+    // TODO allow to create multiple channels
     // Create the NotificationChannel, but only on API 26+ because
     // the NotificationChannel class is new and not in the support library
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -106,13 +103,6 @@ public class LocalNotificationManager {
       int importance = android.app.NotificationManager.IMPORTANCE_DEFAULT;
       NotificationChannel channel = new NotificationChannel(DEFAULT_NOTIFICATION_CHANNEL_ID, name, importance);
       channel.setDescription(description);
-      AudioAttributes audioAttributes = new AudioAttributes.Builder()
-              .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-              .setUsage(AudioAttributes.USAGE_ALARM).build();
-      Uri soundUri = LocalNotification.getDefaultSoundUrl(context);
-      if (soundUri != null) {
-        channel.setSound(soundUri, audioAttributes);
-      }
       // Register the channel with the system; you can't change the importance
       // or other notification behaviors after this
       android.app.NotificationManager notificationManager = context.getSystemService(android.app.NotificationManager.class);
@@ -153,23 +143,16 @@ public class LocalNotificationManager {
   // TODO media style notification support NotificationCompat.MediaStyle
   // TODO custom small/large icons
   private void buildNotification(NotificationManagerCompat notificationManager, LocalNotification localNotification, PluginCall call) {
-    String channelId = DEFAULT_NOTIFICATION_CHANNEL_ID;
-    if (localNotification.getChannelId() != null) {
-      channelId = localNotification.getChannelId();
-    }
-    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.context, channelId)
+    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.context, DEFAULT_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(localNotification.getTitle())
             .setContentText(localNotification.getBody())
             .setAutoCancel(true)
             .setOngoing(false)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setGroupSummary(localNotification.isGroupSummary());
+            .setGroupSummary(localNotification.isGroupSummary())
+            .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
 
-
-    // support multiline text
-    mBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(localNotification.getBody()));
-
-    String sound = localNotification.getSound(context);
+    String sound = localNotification.getSound();
     if (sound != null) {
       Uri soundUri = Uri.parse(sound);
       // Grant permission to use sound
@@ -177,38 +160,17 @@ public class LocalNotificationManager {
               "com.android.systemui", soundUri,
               Intent.FLAG_GRANT_READ_URI_PERMISSION);
       mBuilder.setSound(soundUri);
-      mBuilder.setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
-    } else {
-      mBuilder.setDefaults(Notification.DEFAULT_ALL);
     }
-
 
     String group = localNotification.getGroup();
     if (group != null) {
       mBuilder.setGroup(group);
     }
 
-    // make sure scheduled time is shown instead of display time
-    if (localNotification.isScheduled() && localNotification.getSchedule().getAt() != null) {
-      mBuilder.setWhen(localNotification.getSchedule().getAt().getTime())
-              .setShowWhen(true);
-    }
-
-    mBuilder.setVisibility(NotificationCompat.VISIBILITY_PRIVATE);
+    mBuilder.setVisibility(Notification.VISIBILITY_PRIVATE);
     mBuilder.setOnlyAlertOnce(true);
 
     mBuilder.setSmallIcon(localNotification.getSmallIcon(context));
-
-    String iconColor = localNotification.getIconColor();
-    if (iconColor != null) {
-      try {
-        mBuilder.setColor(Color.parseColor(iconColor));
-      } catch (IllegalArgumentException ex) {
-        call.error("Invalid color provided. Must be a hex string (ex: #ff0000");
-        return;
-      }
-    }
-
     createActionIntents(localNotification, mBuilder);
     // notificationId is a unique int for each localNotification that you must define
     Notification buildNotification = mBuilder.build();
@@ -252,8 +214,6 @@ public class LocalNotificationManager {
     dissmissIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
     dissmissIntent.putExtra(NOTIFICATION_INTENT_KEY, localNotification.getId());
     dissmissIntent.putExtra(ACTION_INTENT_KEY, "dismiss");
-    LocalNotificationSchedule schedule = localNotification.getSchedule();
-    dissmissIntent.putExtra(NOTIFICATION_IS_REMOVABLE_KEY, schedule == null || schedule.isRemovable());
     PendingIntent deleteIntent = PendingIntent.getBroadcast(
             context, localNotification.getId(), dissmissIntent, 0);
     mBuilder.setDeleteIntent(deleteIntent);
@@ -261,13 +221,7 @@ public class LocalNotificationManager {
 
   @NonNull
   private Intent buildIntent(LocalNotification localNotification, String action) {
-    Intent intent;
-    if (activity != null) {
-      intent = new Intent(context, activity.getClass());
-    } else {
-      String packageName = context.getPackageName();
-      intent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-    }
+    Intent intent = new Intent(context, activity.getClass());
     intent.setAction(Intent.ACTION_MAIN);
     intent.addCategory(Intent.CATEGORY_LAUNCHER);
     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -297,7 +251,7 @@ public class LocalNotificationManager {
     Date at = schedule.getAt();
     if (at != null) {
       if (at.getTime() < new Date().getTime()) {
-        Logger.error(Logger.tags("LN"), "Scheduled time must be *after* current time", null);
+        Log.e(LogUtils.getPluginTag("LN"), "Scheduled time must be *after* current time");
         return;
       }
       if (schedule.isRepeating()) {

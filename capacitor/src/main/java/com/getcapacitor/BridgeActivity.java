@@ -4,10 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.webkit.WebView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.util.Log;
+import android.webkit.WebView;
 import com.getcapacitor.android.R;
 import com.getcapacitor.cordova.MockCordovaInterfaceImpl;
 import com.getcapacitor.cordova.MockCordovaWebViewImpl;
@@ -61,7 +60,7 @@ public class BridgeActivity extends AppCompatActivity {
    * Load the WebView and create the Bridge
    */
   protected void load(Bundle savedInstanceState) {
-    Logger.debug("Starting BridgeActivity");
+    Log.d(LogUtils.getCoreTag(), "Starting BridgeActivity");
 
     webView = findViewById(R.id.webview);
 
@@ -121,14 +120,14 @@ public class BridgeActivity extends AppCompatActivity {
     this.bridge.onStart();
     mockWebView.handleStart();
 
-    Logger.debug("App started");
+    Log.d(LogUtils.getCoreTag(), "App started");
   }
 
   @Override
   public void onRestart() {
     super.onRestart();
     this.bridge.onRestart();
-    Logger.debug("App restarted");
+    Log.d(LogUtils.getCoreTag(), "App restarted");
   }
 
   @Override
@@ -141,7 +140,7 @@ public class BridgeActivity extends AppCompatActivity {
 
     mockWebView.handleResume(this.keepRunning);
 
-    Logger.debug("App resumed");
+    Log.d(LogUtils.getCoreTag(), "App resumed");
   }
 
   @Override
@@ -154,7 +153,7 @@ public class BridgeActivity extends AppCompatActivity {
       this.mockWebView.handlePause(keepRunning);
     }
 
-    Logger.debug("App paused");
+    Log.d(LogUtils.getCoreTag(), "App paused");
   }
 
   @Override
@@ -172,17 +171,16 @@ public class BridgeActivity extends AppCompatActivity {
       mockWebView.handleStop();
     }
 
-    Logger.debug("App stopped");
+    Log.d(LogUtils.getCoreTag(), "App stopped");
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
-    this.bridge.onDestroy();
     if (this.mockWebView != null) {
       mockWebView.handleDestroy();
     }
-    Logger.debug("App destroyed");
+    Log.d(LogUtils.getCoreTag(), "App destroyed");
   }
 
   @Override

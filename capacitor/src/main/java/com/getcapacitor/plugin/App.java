@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.util.Log;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.Logger;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -19,19 +19,17 @@ public class App extends Plugin {
   private static final String EVENT_URL_OPEN = "appUrlOpen";
   private static final String EVENT_STATE_CHANGE = "appStateChange";
   private static final String EVENT_RESTORED_RESULT = "appRestoredResult";
-  private boolean isActive = false;
 
   public void fireChange(boolean isActive) {
-    Logger.debug(getLogTag(), "Firing change: " + isActive);
+    Log.d(getLogTag(), "Firing change: " + isActive);
     JSObject data = new JSObject();
     data.put("isActive", isActive);
-    this.isActive = isActive;
     notifyListeners(EVENT_STATE_CHANGE, data, false);
   }
 
   public void fireRestoredResult(PluginResult result) {
-    Logger.debug(getLogTag(), "Firing restored result");
-    notifyListeners(EVENT_RESTORED_RESULT, result.getWrappedResult(), true);
+    Log.d(getLogTag(), "Firing restored result");
+    notifyListeners(EVENT_RESTORED_RESULT, result.getData(), true);
   }
 
   public void fireBackButton() {
@@ -63,13 +61,6 @@ public class App extends Plugin {
   }
 
   @PluginMethod()
-  public void getState(PluginCall call) {
-    JSObject data = new JSObject();
-    data.put("isActive", this.isActive);
-    call.success(data);
-  }
-
-  @PluginMethod()
   public void canOpenUrl(PluginCall call) {
     String url = call.getString("url");
     if (url == null) {
@@ -87,7 +78,7 @@ public class App extends Plugin {
       call.success(ret);
       return;
     } catch(PackageManager.NameNotFoundException e) {
-      Logger.error(getLogTag(), "Package name '"+url+"' not found!", null);
+      Log.e(getLogTag(), "Package name '"+url+"' not found!");
     }
 
     ret.put("value", false);

@@ -20,8 +20,6 @@ import com.getcapacitor.PluginMethod;
 @NativePlugin()
 public class Haptics extends Plugin {
 
-  boolean selectionStarted = false;
-
   @PluginMethod()
   @SuppressWarnings("MissingPermission")
   public void vibrate(PluginCall call) {
@@ -60,18 +58,16 @@ public class Haptics extends Plugin {
 
   @PluginMethod()
   public void selectionStart(PluginCall call) {
-    this.selectionStarted = true;
+    call.unimplemented();
   }
 
   @PluginMethod()
   public void selectionChanged(PluginCall call) {
-    if (this.selectionStarted) {
-      this.bridge.getWebView().performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
-    }
+    call.unimplemented();
   }
 
   @PluginMethod()
   public void selectionEnd(PluginCall call) {
-    this.selectionStarted = false;
+    call.unimplemented();
   }
 }

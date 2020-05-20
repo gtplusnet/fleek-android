@@ -1,5 +1,7 @@
 package com.getcapacitor;
 
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -60,7 +62,7 @@ class JSInjector {
     } else if (html.contains("</head>")) {
       html = html.replace("</head>", js + "\n" + "</head>");
     } else {
-      Logger.error("Unable to inject Capacitor, Plugins won't work");
+      Log.e(LogUtils.getCoreTag(), "Unable to inject Capacitor, Plugins won't work");
     }
     return new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
   }
@@ -79,7 +81,7 @@ class JSInjector {
       }
       return out.toString();
     } catch (Exception e) {
-      Logger.error("Unable to process HTML asset file. This is a fatal error", e);
+      Log.e(LogUtils.getCoreTag(), "Unable to process HTML asset file. This is a fatal error", e);
     }
 
     return "";

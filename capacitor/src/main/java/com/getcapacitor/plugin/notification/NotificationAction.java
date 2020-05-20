@@ -1,10 +1,11 @@
 package com.getcapacitor.plugin.notification;
 
+import android.util.Log;
+
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 
-import com.getcapacitor.Logger;
-
+import com.getcapacitor.LogUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -57,7 +58,7 @@ public class NotificationAction {
         }
       }
     } catch (Exception e) {
-      Logger.error(Logger.tags("LN"), "Error when building action types", e);
+      Log.e(LogUtils.getPluginTag("LN"), "Error when building action types", e);
     }
     return actionTypeMap;
   }

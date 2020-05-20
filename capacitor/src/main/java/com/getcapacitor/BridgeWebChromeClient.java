@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JsPromptResult;
@@ -180,7 +181,7 @@ public class BridgeWebChromeClient extends WebChromeClient {
   @Override
   public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
     super.onGeolocationPermissionsShowPrompt(origin, callback);
-    Logger.debug("onGeolocationPermissionsShowPrompt: DOING IT HERE FOR ORIGIN: " + origin);
+    Log.d(LogUtils.getCoreTag(), "onGeolocationPermissionsShowPrompt: DOING IT HERE FOR ORIGIN: " + origin);
 
     // Set that we want geolocation perms for this origin
     callback.invoke(origin, true, false);
@@ -189,7 +190,7 @@ public class BridgeWebChromeClient extends WebChromeClient {
     if (!geo.hasRequiredPermissions()) {
       geo.pluginRequestAllPermissions();
     } else {
-      Logger.debug("onGeolocationPermissionsShowPrompt: has required permis");
+      Log.d(LogUtils.getCoreTag(), "onGeolocationPermissionsShowPrompt: has required permis");
     }
   }
 
@@ -210,7 +211,7 @@ public class BridgeWebChromeClient extends WebChromeClient {
               if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 showMediaCaptureOrFilePicker(filePathCallback, fileChooserParams, captureVideo);
               } else {
-                Logger.warn(Logger.tags("FileChooser"), "Camera permission not granted");
+                Log.w(LogUtils.getCoreTag("FileChooser"), "Camera permission not granted");
                 filePathCallback.onReceiveValue(null);
               }
             }
@@ -243,7 +244,7 @@ public class BridgeWebChromeClient extends WebChromeClient {
       shown = showImageCapturePicker(filePathCallback);
     }
     if (!shown) {
-      Logger.warn(Logger.tags("FileChooser"), "Media capture intent could not be launched. Falling back to default file picker.");
+      Log.w(LogUtils.getCoreTag("FileChooser"), "Media capture intent could not be launched. Falling back to default file picker.");
       showFilePicker(filePathCallback, fileChooserParams);
     }
   }
@@ -258,7 +259,7 @@ public class BridgeWebChromeClient extends WebChromeClient {
     try {
       imageFileUri = CameraUtils.createImageFileUri(bridge.getActivity(), bridge.getContext().getPackageName());
     } catch (Exception ex) {
-      Logger.error("Unable to create temporary media capture file: " + ex.getMessage());
+      Log.e(LogUtils.getCoreTag(), "Unable to create temporary media capture file: " + ex.getMessage());
       return false;
     }
     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
@@ -349,18 +350,18 @@ public class BridgeWebChromeClient extends WebChromeClient {
 
   @Override
   public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-    String tag = Logger.tags("Console");
+    String tag = "Capacitor/Console";
     if (consoleMessage.message() != null && isValidMsg(consoleMessage.message())) {
       String msg = String.format("File: %s - Line %d - Msg: %s" , consoleMessage.sourceId() , consoleMessage.lineNumber(), consoleMessage.message());
       String level = consoleMessage.messageLevel().name();
       if ("ERROR".equalsIgnoreCase(level)) {
-        Logger.error(tag, msg, null);
+        Log.e(tag, msg);
       } else if ("WARNING".equalsIgnoreCase(level)) {
-        Logger.warn(tag, msg);
+        Log.w(tag, msg);
       } else if ("TIP".equalsIgnoreCase(level)) {
-        Logger.debug(tag, msg);
+        Log.d(tag, msg);
       } else {
-        Logger.info(tag, msg);
+        Log.i(tag, msg);
       }
     }
     return true;

@@ -3,24 +3,15 @@ package com.getcapacitor;
 import android.text.TextUtils;
 
 /**
- * @deprecated
+ *
  */
 public abstract class LogUtils {
 
-  /**
-   * @deprecated
-   */
   public static final String LOG_TAG_CORE = "Capacitor";
-
-  /**
-   * @deprecated
-   */
   public static final String LOG_TAG_PLUGIN = LOG_TAG_CORE + "/Plugin";
 
   /**
    * Creates a core log TAG
-   *
-   * @deprecated
    * @param subTags sub log tags joined by a slash
    */
   public static String getCoreTag(String... subTags) {
@@ -29,8 +20,6 @@ public abstract class LogUtils {
 
   /**
    * Creates a plugin log TAG
-   *
-   * @deprecated
    * @param subTags sub log tags joined by a slash
    */
   public static String getPluginTag(String... subTags) {
